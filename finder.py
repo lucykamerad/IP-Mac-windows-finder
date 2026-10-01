@@ -12,12 +12,20 @@ def get_ip_address():
         s.close()
         return ip
     except Exception:
-        return socket.gethostbyname(socket.gethostname())
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except Exception:
+            return "Unknown"
 
 def get_mac_address():
     try:
         # Get MAC address using uuid
-        mac_num = hex(uuid.getnode()).replace('0x', '').upper()
+        node = uuid.getnode()
+        # uuid.getnode() returns a random number with the multicast bit set
+        # when it cannot find a real hardware address
+        if (node >> 40) & 1:
+            return "Unknown"
+        mac_num = hex(node).replace('0x', '').upper()
         # Ensure it's 12 characters long (padding with zeros if necessary)
         mac_num = mac_num.zfill(12)
         # Format it as XX:XX:XX:XX:XX:XX
